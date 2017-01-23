@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 import time
 
+''' train a single hidden layer regression model '''
 
 def variable_summaries(var):
   """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""

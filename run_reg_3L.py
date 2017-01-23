@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 import time
 
+''' train a 3 hidden layer regression model '''
 
 def read_and_decode(filename_queue):
   reader = tf.TFRecordReader()
