@@ -10,7 +10,7 @@ import time
 ''' train a single hidden layer regression model '''
 
 def variable_summaries(var):
-  """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
+  """Attach a lot of summaries to a Tensor (for TensorBoard visualization)"""
   with tf.name_scope('summaries'):
     mean = tf.reduce_mean(var)
     tf.summary.scalar('mean', mean)
@@ -54,7 +54,7 @@ def input_pipeline(filenames, batch_size, num_epochs):
     return MFCC_Batch, ART_Batch
 
 
-block='=' * 50
+block = '=' * 50
 TRAIN_TFR = '/home/inchon26/tensorflow/TrainSet.TFR'
 TEST_TFR = '/home/inchon26/tensorflow/TestSet.TFR'
 LOG_DIR = '/home/hdd2tb/TFlog'
@@ -69,7 +69,7 @@ with tf.Graph().as_default():
 #   MFCC_TestBatch, ART_TestBatch = input_pipeline(TEST_TFR, NUM_BATCH, NUM_EPOCH) # batch_size and num_epochs as 1
 
   with tf.name_scope('weights'):
-    W = tf.Variable(tf.random_normal([39, 16], stddev=0.35))
+    W = tf.Variable(tf.random_normal([39, 16], stddev = 0.35))
     variable_summaries(W)
 
   with tf.name_scope('biases'):

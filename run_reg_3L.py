@@ -41,13 +41,13 @@ def input_pipeline(filenames, batch_size, num_epochs):
 
 def weight_variable(shape):
   """Create a weight variable with appropriate initialization."""
-  initial = tf.truncated_normal(shape, stddev=0.1)
+  initial = tf.truncated_normal(shape, stddev = 0.1)
   return tf.Variable(initial)
 
 
 def bias_variable(shape):
   """Create a bias variable with appropriate initialization."""
-  initial = tf.constant(0.1, shape=shape)
+  initial = tf.constant(0.1, shape = shape)
   return tf.Variable(initial)
 
 
@@ -64,7 +64,7 @@ def variable_summaries(var):
     tf.summary.histogram('histogram', var)
 
 
-def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
+def nn_layer(input_tensor, input_dim, output_dim, layer_name, act = tf.nn.relu):
   with tf.name_scope(layer_name):
     with tf.name_scope('weights'):
       weights = weight_variable([input_dim, output_dim])
@@ -75,12 +75,12 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
     with tf.name_scope('Wx_plus_b'):
       preactivate = tf.matmul(input_tensor, weights) + biases
       tf.summary.histogram('pre_activations', preactivate)
-    activations = act(preactivate, name='activation')
+    activations = act(preactivate, name = 'activation')
     tf.summary.histogram('activations', activations)
     return activations
 
 
-block='=' * 50
+block = '=' * 50
 TRAIN_TFR = '/home/inchon26/tensorflow/TrainSet.TFR'
 TEST_TFR = '/home/inchon26/tensorflow/TestSet.TFR'
 LOG_DIR = '/home/hdd2tb/TFlog'
@@ -98,7 +98,7 @@ with tf.Graph().as_default():
   hidden2 = nn_layer(hidden1, 100, 100, 'h_layer2')
   hidden3 = nn_layer(hidden2, 100, 100, 'h_layer3')
 
-  output = nn_layer(hidden3, 100, 16, 'o_layer', act=tf.identity)
+  output = nn_layer(hidden3, 100, 16, 'o_layer', act = tf.identity)
 
   with tf.name_scope('cost'):
     cost = tf.reduce_mean(tf.square(output - ART_TrainBatch))
@@ -117,7 +117,7 @@ with tf.Graph().as_default():
   saver = tf.train.Saver()
 
   merged_summary = tf.summary.merge_all()
-  train_writer = tf.summary.FileWriter(LOGDIR, sess.graph)
+  train_writer = tf.summary.FileWriter(LOG_DIR, sess.graph)
 
   coord = tf.train.Coordinator()
   threads = tf.train.start_queue_runners(sess = sess, coord = coord)

@@ -37,10 +37,10 @@ def write_TFR(input, output, fname):
 
 
 # Specify filenames
-x_train = np.loadtxt('MFCC.train', dtype='float')
-y_train = np.loadtxt('ART.train', dtype='float')
-x_test = np.loadtxt('MFCC.test', dtype='float')
-y_test = np.loadtxt('ART.test', dtype='float')
+x_train = np.loadtxt('MFCC.train', dtype = 'float')
+y_train = np.loadtxt('ART.train', dtype = 'float')
+x_test = np.loadtxt('MFCC.test', dtype = 'float')
+y_test = np.loadtxt('ART.test', dtype = 'float')
 
 TFRecord_io.write_TFR(x_train, y_train, 'TrainSet.TFR')
 TFRecord_io.write_TFR(x_test, y_test, 'TestSet.TFR')
