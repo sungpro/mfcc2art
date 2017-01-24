@@ -81,13 +81,13 @@ def nn_layer(input_tensor, input_dim, output_dim, layer_name, act = tf.nn.relu):
 
 
 block = '=' * 50
-TRAIN_TFR = '/home/inchon26/tensorflow/TrainSet.TFR'
-TEST_TFR = '/home/inchon26/tensorflow/TestSet.TFR'
+TRAIN_TFR = '/home/inchon26/tensorflow/exp/TrainSet.TFR'
+TEST_TFR = '/home/inchon26/tensorflow/exp/TestSet.TFR'
 LOG_DIR = '/home/hdd2tb/TFlog'
 SAVE_DIR = '/home/hdd2tb/TFmodel'
-NUM_EPOCH = 2
-NUM_BATCH = 100
-DISP_STEP = 100
+NUM_EPOCH = 1
+NUM_BATCH = 10
+DISP_STEP = 1000
 
 with tf.Graph().as_default():
 

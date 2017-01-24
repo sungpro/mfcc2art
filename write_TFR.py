@@ -42,5 +42,5 @@ y_train = np.loadtxt('ART.train', dtype = 'float')
 x_test = np.loadtxt('MFCC.test', dtype = 'float')
 y_test = np.loadtxt('ART.test', dtype = 'float')
 
-TFRecord_io.write_TFR(x_train, y_train, 'TrainSet.TFR')
-TFRecord_io.write_TFR(x_test, y_test, 'TestSet.TFR')
+write_TFR(x_train, y_train, 'TrainSet.TFR')
+write_TFR(x_test, y_test, 'TestSet.TFR')
