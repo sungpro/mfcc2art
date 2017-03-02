@@ -25,18 +25,18 @@ FLAG.state()
 
 
 def evaluate():
-  """Eval XRMB for a number of steps."""
+  """Eval mfcc2art for a number of steps."""
 
   with tf.Graph().as_default() as g:
 
-    MFCC_TestBatch, ART_TestBatch = xrmb.input_pipeline(
+    MFCC_TestBatch, ART_TestBatch = mfcc2art.input_pipeline(
       FLAG.TEST_DIR, FLAG.BATCH_SIZE, FLAG.NUM_EPOCH, FLAG.SEED, FLAG.NUM_THREADS
     )
 
     # Build a Graph that computes the predictions from the inference model
-    output = xrmb.inference(MFCC_TestBatch)
+    output = mfcc2art.inference(MFCC_TestBatch)
 
-    cost = xrmb.cost(output, ART_TestBatch)
+    cost = mfcc2art.cost(output, ART_TestBatch)
 
     saver = tf.train.Saver()
     

@@ -28,18 +28,18 @@ FLAG.state()
 def train():
   with tf.Graph().as_default():
 
-    MFCC_TrainBatch, ART_TrainBatch = xrmb.input_pipeline(
+    MFCC_TrainBatch, ART_TrainBatch = mfcc2art.input_pipeline(
       FLAG.TRAIN_DIR, FLAG.BATCH_SIZE, FLAG.NUM_EPOCH, FLAG.SEED, FLAG.NUM_THREADS
     )
 
     # inference model
-    output = xrmb.inference(MFCC_TrainBatch)
+    output = mfcc2art.inference(MFCC_TrainBatch)
 
     # calculate loss
-    cost = xrmb.cost(output, ART_TrainBatch)
+    cost = mfcc2art.cost(output, ART_TrainBatch)
 
     # build a graph that trains the model
-    train_op = xrmb.train(cost, FLAG.LEARN_RATE)
+    train_op = mfcc2art.train(cost, FLAG.LEARN_RATE)
 
     sess = tf.InteractiveSession()
     init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
