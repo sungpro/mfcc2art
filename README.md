@@ -6,14 +6,18 @@
 - Converts an ASCII file to a `TFRecords` file which follows the standard TensorFlow format containing `tf.train.Example` `protocol buffers` which hold `features` as a field
 - Thus written TFRecords were read and fed into the graph as tensors with the use of `tf.TFRecordReader` and `tf.parse_single_example`
 
-### xrmb_train.py
-- Trains a `linear` regression model
+### flag.py
+- A lightweight global container/accessor for flags and their values
+
+### mfcc2art.py
+- Contains functions which builds the mfcc2art network
+
+### mfcc2art_train.py
+- Trains a three-hidden-layer neural network
+- Uses ReLU activation function in hidden layers as default
 - Writes summaries for tensorboard visualization
 - Supports threading, queues, batch training
 
-### xrmb_eval.py
-- Trains a three hidden layer `non-linear` regression model
-- Uses ReLU activation function in hidden layers as default
-- Writes summaries for tensorboard visualization
-- Supports Threading, queues, batch training
+### mfcc2art_eval.py
+- Loads and evaluates a trained model
 
