@@ -15,7 +15,7 @@ FLAG.LOG_DIR = '/home/inchon26/tensorflow/exp/log'
 FLAG.TRAIN_EXAMPLES = 3264252
 FLAG.TEST_EXAMPLES= 816063
 FLAG.BATCH_SIZE = 100
-SUMMARY_FREQ = 1000 # summary-writing frequency
+FLAG.SUMMARY_FREQ = 1000 # summary-writing frequency
 FLAG.NUM_THREADS = 8
 
 # raise error if DIR's are unset
