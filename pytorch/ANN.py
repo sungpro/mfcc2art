@@ -19,7 +19,7 @@ learning_rate = 0.001
 
 
 # Input pipeline
-train_dataset = Dataset('MFCC.archive', 'ART.archive')
+train_dataset = Dataset('MFCC_C.archive', 'ART_C.archive')
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                            batch_size=batch_size,
                                            shuffle=True)

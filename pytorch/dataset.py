@@ -1,6 +1,6 @@
 import pandas as pd
 
-class Dataset(object):
+class Dataset():
     """
     Loads dataset in csv format
     """
@@ -19,20 +19,15 @@ class Dataset(object):
         return len(self.ART) # `len(ART)` takes less to compute
 
     def __getitem__(self, idx):
-        i = 0
+
         sample = None
-        try:
-            MFCC = self.MFCC.iloc[idx, :].as_matrix().astype('float')
-            ART = self.ART.iloc[idx, :].as_matrix().astype('float')
 
-            sample = {'MFCC': MFCC, 'ART': ART}
-            i += 1
+        MFCC = self.MFCC.iloc[idx, :].as_matrix().astype('float')
+        ART = self.ART.iloc[idx, :].as_matrix().astype('float')
 
-            if self.transform:
-                sample = self.transform(sample)
+        sample = {'MFCC': MFCC, 'ART': ART}
 
-        except ValueError as e:
-            print('ERROR', e, 'on line', i, ': skipping line', i)
-            continue
+        if self.transform:
+            sample = self.transform(sample)
 
-    return sample
+        return sample
