@@ -30,7 +30,7 @@ class Net(nn.Module):
     ANN: 5 hidden layers
     """
     def __init__(self, input_size, output_size):
-        super(Net, self).__init__()
+        super().__init__()
         self.h1 = nn.Sequential(
             nn.Linear(input_size, 300),
             nn.ReLU())
