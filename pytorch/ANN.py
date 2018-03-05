@@ -2,6 +2,7 @@
 # sunghahh@gmail.com
 
 
+from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.utils.data
@@ -63,9 +64,9 @@ optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 
 # Train
 for epoch in range(num_epochs):
-    for i, (MFCC, ART) in enumerate(train_loader):
-        MFCC = Variable(MFCC.cuda())
-        ART = Variable(ART.cuda())
+    for i, batch in enumerate(train_loader):
+        MFCC, ART = batch['MFCC'], batch['ART']
+        MFCC, ART = Variable(MFCC.cuda()), Variable(ART.cuda())
 
         # Forward, backward, optimize
         optimizer.zero_grad() # empty gradient buffer
