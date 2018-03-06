@@ -11,12 +11,16 @@ from torch.autograd import Variable
 
 
 # Params
-input_size = 39
+sequence_length = 13
+input_size = 3
 output_size = 16
+hidden_size = 100
+num_layers = 1
 num_epochs = 100
 batch_size = 128
 learning_rate = 0.003
 
+torch.manual_seed(777) # for reproducibility
 
 # Input pipeline
 train_dataset = Dataset('MFCC_C.archive', 'ART_C.archive')
@@ -26,59 +30,52 @@ train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
 
 test_dataset = Dataset('MFCC_C_test.archive', 'ART_C_test.archive')
 test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
-                                           batch_size=batch_size,
-                                           shuffle=True)
+                                          batch_size=batch_size,
+                                          shuffle=True)
 
 
 class Net(nn.Module):
-    """
-    ANN: 5 hidden layers
-    """
-    def __init__(self):
+
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
         super().__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv1d(1, 1, 2),
-            nn.MaxPool1d(3, stride=1),
-            nn.ReLU()
-        )
 
-        self.conv2 = nn.Sequential(
-            nn.Conv1d(1, 1, 2),
-            nn.MaxPool1d(3, stride=1),
-            nn.ReLU()
-        )
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
 
-        self.fc1 = nn.Linear(33, 100)
-        self.fc2 = nn.Linear(100, 100)
-        self.fc3 = nn.Linear(100, 16)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
 
 
     def forward(self, x):
-        out = torch.unsqueeze(x, 1) # unsqueeze to (N,C,L)
-        out = self.conv1(out)
-        out = self.conv2(out)
-        input_size = out.size(0)
-        out = out.view(input_size, -1)
-        out = self.fc1(out)
-        out = self.fc2(out)
-        out = self.fc3(out)
+        # set initial states
+        h0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size).cuda())
+        c0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size).cuda())
+
+        out, _ = self.lstm(x, (h0, c0))
+
+        # decode the hidden state of the last timestep
+        out = self.fc(out[:, -1, :])
         return out
 
+
 # Define net
-net = Net()
+net = Net(input_size, hidden_size, num_layers, output_size)
 net.cuda()
 
+#criterion = nn.CrossEntropyLoss()
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
 
 
 def train(num_epochs):
     net.train()
+
     for epoch in range(num_epochs):
         for i, batch in enumerate(train_loader):
-            MFCC, ART = batch['MFCC'], batch['ART']
-            MFCC, ART = Variable(MFCC.cuda()), Variable(ART.cuda())
             optimizer.zero_grad()
+            MFCC, ART = batch['MFCC'], batch['ART']
+            MFCC = Variable(MFCC.view(-1, sequence_length, input_size)).cuda()
+            ART = Variable(ART).cuda()
             pred = net(MFCC)
             loss = criterion(pred, ART)
             loss.backward()
@@ -91,10 +88,12 @@ def train(num_epochs):
 
 def test():
     net.eval()
+
     test_loss = 0
     for i, batch in enumerate(test_loader):
         MFCC, ART = batch['MFCC'], batch['ART']
-        MFCC, ART = Variable(MFCC.cuda(), volatile=True), Variable(ART.cuda())
+        MFCC = Variable(MFCC.view(-1, sequence_length, input_size)).cuda()
+        ART = Variable(ART).cuda()
         pred = net(MFCC)
         test_loss += criterion(pred, ART, size_average=False).data[0]
 
@@ -109,4 +108,4 @@ test()
 
 
 # Save
-torch.save(net.state_dict(), 'mfcc2art_cnn_model.pkl')
+torch.save(net.state_dict(), 'mfcc2art_rnn_model.pkl')
