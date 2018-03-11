@@ -6,6 +6,7 @@ from __future__ import print_function
 import time
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.utils.data
 from torch.autograd import Variable
 from dataset import Dataset
@@ -15,12 +16,12 @@ from dataset import Dataset
 nseq = 13
 ninp = 3
 nout = 16
-nhid = 100
-nlayers = 1
-bsz = 128
-num_epochs = 100
-log_interval = 200
-lr = 10
+nhid = 10 #100
+nlayers = 2
+bsz = 256
+num_epochs = 300
+log_interval = 100
+lr = 20
 clip_max_norm = 0.25
 criterion = nn.MSELoss()
 
@@ -28,7 +29,11 @@ criterion = nn.MSELoss()
 torch.manual_seed(777) # for reproducibility
 
 # Input pipeline
+#################### for debug
+######################################
 train_dataset = Dataset('MFCC_C.archive', 'ART_C.archive')
+############for debug
+
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                            batch_size=bsz,
                                            shuffle=True)
@@ -46,8 +51,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
 
 class Net(nn.Module):
 
-    def __init__(self, rnn_type, nout, ninp, nhid, nlayers, dropout=0.5):
-
+    def __init__(self, rnn_type, ninp, nhid, nlayers, nout, dropout=0.5):
         super().__init__()
 
         if rnn_type in ['LSTM', 'GRU']:
@@ -70,35 +74,23 @@ class Net(nn.Module):
         self.fc.bias.data.fill_(0)
 
 
-    def init_hidden(self, bsz):
-        weight = next(self.parameters()).data
+    def forward(self, input):
         if self.rnn_type == 'LSTM':
-            return (Variable(weight.new(self.nlayers, bsz, self.nhid).zero_().cuda()),
-                    Variable(weight.new(self.nlayers, bsz, self.nhid).zero_().cuda()))
+            h0 = Variable(torch.zeros(self.nlayers, input.size(0), self.nhid)).cuda()
+            c0 = Variable(torch.zeros(self.nlayers, input.size(0), self.nhid)).cuda()
+            hidden = (h0, c0)
         else:
-            return (weight.new(self.nlayers, bsz, self.nhid).zero_()).cuda()
-
-
-    def forward(self, input, hidden):
-
-        out, hidden = self.rnn(input, hidden)
-        # hidden state of the last timestep
+            hidden = Variable(torch.zeros(self.nlayers, bsz, self.nhid)).cuda()
+        
+        out, _ = self.rnn(input, hidden)
         out = self.fc(out[:, -1, :])
-        return out, hidden
+        #out = self.fc(F.relu(out[:, -1, :]))
+        return out
 
-
-def repackage_hidden(h):
-    """
-    wraps hidden states in new Variables, to detach them from their history
-    """
-    if type(h) == Variable:
-        return Variable(h.data)
-    else:
-        return tuple(repackage_hidden(v) for v in h)
 
 
 # Define net
-net = Net('LSTM', nout, ninp, nhid, nlayers)
+net = Net('LSTM', ninp, nhid, nlayers, nout)
 net.cuda()
 
 optimizer = torch.optim.Adam(net.parameters(), lr=lr)
@@ -108,28 +100,19 @@ def train():
     net.train()
     total_loss = 0
     start_time = time.time()
-    hidden = net.init_hidden(bsz)
 
     for i, batch in enumerate(train_loader):
         MFCC, ART = batch['MFCC'], batch['ART']
         MFCC = Variable(MFCC.view(-1, nseq, ninp)).cuda()
         ART = Variable(ART).cuda()
 
-        # starting each batch, we detach the hidden state from how it was previously produced
-        # if we didn't, the model would try backpropagating all the way to start of the dataset
-        hidden = repackage_hidden(hidden)
-        pred, hidden = net(MFCC, hidden)
+        pred = net(MFCC)
 
         optimizer.zero_grad()
         loss = criterion(pred, ART)
         total_loss += loss.data
         loss.backward()
         optimizer.step()
-
-        # clip grad norms to prevent the exploding gradient problem in RNNs
-        torch.nn.utils.clip_grad_norm(net.parameters(), clip_max_norm)
-        for p in net.parameters():
-            p.data.add_(-lr, p.grad.data)
 
         if (i+1) % log_interval == 0:
             cur_loss = total_loss[0] / log_interval
@@ -144,16 +127,13 @@ def train():
 def evaluate(data_loader):
     net.eval()
     total_loss = 0
-    hidden = net.init_hidden(bsz)
     for i, batch in enumerate(data_loader):
         MFCC, ART = batch['MFCC'], batch['ART']
         MFCC = Variable(MFCC.view(-1, nseq, ninp), volatile=True).cuda()
         ART = Variable(ART).cuda()
-        pred, hidden = net(MFCC, hidden)
+        pred = net(MFCC)
         total_loss += len(MFCC) * criterion(pred, ART).data
-        hidden = repackage_hidden(hidden)
-    return total_loss[0] / len(data_source)
-
+    return total_loss[0] / len(data_loader)
 
 
 best_val_loss = None
@@ -180,7 +160,7 @@ except KeyboardInterrupt:
     print('Exiting from training early')
 
 # load the best saved model
-with open(args.save, 'rb') as f:
+with open('model.pt', 'rb') as f:
     net = torch.load(f)
 
 # run on test data
